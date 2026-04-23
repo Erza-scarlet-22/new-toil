@@ -132,7 +132,7 @@ Parameters:
 
   ServiceNowSecretName:
     Type: String
-    Default: "servicenow/credentials"
+    Default: "servicenow/credential"
     Description: Secrets Manager secret name for ServiceNow credentials.
 
   RdsDbInstanceId:
@@ -302,7 +302,7 @@ Resources:
   # NEW – ServiceNow credentials
   # After stack deploys, update this secret with real values:
   #   aws secretsmanager put-secret-value \
-  #     --secret-id servicenow/credentials \
+  #     --secret-id servicenow/credential \
   #     --secret-string '{"instance_url":"https://devXXXXX.service-now.com","username":"aws-log-aggregator","password":"YourPassword"}'
   ServiceNowSecret:
     Type: AWS::SecretsManager::Secret
@@ -1432,7 +1432,7 @@ Resources:
       FunctionName: !Sub "log-aggregator-servicenow-${EnvironmentName}"
       Description: >
         Bedrock action group: createIncident, getTicketStatus, updateTicket.
-        DEMO_MODE=true by default. Set false after configuring servicenow/credentials.
+        DEMO_MODE=true by default. Set false after configuring servicenow/credential.
         Stub replaced by CodeBuild.
       Runtime: python3.12
       Handler: servicenow_lambda_handler.handler
@@ -1442,7 +1442,6 @@ Resources:
       Environment:
         Variables:
           SERVICENOW_SECRET_NAME: !Ref ServiceNowSecretName
-          AWS_DEFAULT_REGION:     !Ref AWS::Region
           DEMO_MODE:              "true"
       Code:
         ZipFile: |
@@ -1480,7 +1479,6 @@ Resources:
           SERVICENOW_SECRET_NAME:   !Ref ServiceNowSecretName
           VALIDATION_POLL_SECONDS:  "300"
           VALIDATION_POLL_INTERVAL: "15"
-          AWS_DEFAULT_REGION:       !Ref AWS::Region
       Code:
         ZipFile: |
           import json
@@ -1503,7 +1501,6 @@ Resources:
         Variables:
           DUMMY_APP_URL:          !Sub "http://${AppLoadBalancer.DNSName}"
           SERVICE_ACCOUNT_SECRET: "dummy-app/service-account-credentials"
-          AWS_DEFAULT_REGION:     !Ref AWS::Region
       Code:
         ZipFile: |
           import json
@@ -1525,7 +1522,6 @@ Resources:
       Environment:
         Variables:
           RDS_DB_INSTANCE_ID: !Ref RdsDbInstanceId
-          AWS_DEFAULT_REGION: !Ref AWS::Region
       Code:
         ZipFile: |
           import json
@@ -1549,7 +1545,6 @@ Resources:
           ECS_CLUSTER_NAME:       !Ref EcsCluster
           DUMMY_APP_SERVICE_NAME: !Sub "${DummyAppServiceName}-svc-${EnvironmentName}"
           MAX_DESIRED_COUNT:      "4"
-          AWS_DEFAULT_REGION:     !Ref AWS::Region
       Code:
         ZipFile: |
           import json
@@ -1975,4 +1970,3 @@ Outputs:
   SSLCertSecretArn:
     Description: "SSL Lambda writes renewed cert ARN here"
     Value: !Ref SSLCertSecret
-
